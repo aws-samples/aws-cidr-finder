@@ -1,0 +1,52 @@
+# Copyright 2016-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# 
+# Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with the License. A copy of the License is located at
+# 
+# http://aws.amazon.com/apache2.0/
+# 
+# or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+
+Description: "Exports CidrFindr: the Arn to a lambda function for use with custom resources. Finds available subnet CIDR ranges."
+
+Parameters:
+  S3Bucket:
+    Description: Bucket that stores the template assets
+    Type: String
+  S3Prefix:
+    Description: Prefix for the template assets
+    Type: String
+  FunctionName:
+    Description: Name of the lambda function
+    Type: String
+
+Resources:
+  # The lambda function needs read-only access to EC2
+  Role:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: [lambda.amazonaws.com]
+          Action: ["sts:AssumeRole"]
+      ManagedPolicyArns: ["arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess"]
+
+  # Create the lambda function from the code stored in the bucket specified in params 
+  Function:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Ref FunctionName
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Sub ${S3Prefix}/cidr-findr.zip
+      Handler: lambda.lambda_handler
+      Role: !GetAtt [Role, Arn]
+      Runtime: python2.7
+
+Outputs:
+  FunctionArn:
+    Value: !GetAtt [Function, Arn]
+    Export:
+      Name: CidrFindr
