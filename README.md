@@ -14,39 +14,41 @@ First of all, you need to install AWS CIDR finder in your account. The included 
 
 The following example is included in full in the `cfn` directory and creates a new VPC along with 3 new subnets using automatically calculated CIDR ranges.
 
-    Resources:
-      # Create a new VPC for the example
-      Vpc:
-        Type: AWS::EC2::VPC
-        Properties:
-          CidrBlock: 192.168.0.0/23
+```yaml
+Resources:
+  # Create a new VPC for the example
+  Vpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 192.168.0.0/23
 
-      # Call the custom resource, specify 3 subnets of different sizes.
-      # The resource will have a property called CidrBlocks with an array of 3 CIDR block definitions
-      CidrFindr:
-        Type: Custom::CidrFindr
-        Properties:
-          ServiceToken: !ImportValue CidrFindr
-          VpcId: !Ref Vpc  # Refer to the VPC created above
-          Sizes: [24, 25, 26]  # 3 subnets of differing sizes
+  # Call the custom resource, specify 3 subnets of different sizes.
+  # The resource will have a property called CidrBlocks with an array of 3 CIDR block definitions
+  CidrFindr:
+    Type: Custom::CidrFindr
+    Properties:
+      ServiceToken: !ImportValue CidrFindr
+      VpcId: !Ref Vpc  # Refer to the VPC created above
+      Sizes: [24, 25, 26]  # 3 subnets of differing sizes
 
-      # Use the first entry from CidrFindr's CidrBlocks property
-      Subnet1:
-        Type: AWS::EC2::Subnet
-        Properties:
-          CidrBlock: !Select [0, !GetAtt [CidrFindr, CidrBlocks]]
-          VpcId: !Ref Vpc
-          
-      # Use the second entry from CidrFindr's CidrBlocks property
-      Subnet2:
-        Type: AWS::EC2::Subnet
-        Properties:
-          CidrBlock: !Select [1, !GetAtt [CidrFindr, CidrBlocks]]
-          VpcId: !Ref Vpc
-          
-      # Use the third entry from CidrFindr's CidrBlocks property
-      Subnet3:
-        Type: AWS::EC2::Subnet
-        Properties:
-          CidrBlock: !Select [2, !GetAtt [CidrFindr, CidrBlocks]]
-          VpcId: !Ref Vpc
+  # Use the first entry from CidrFindr's CidrBlocks property
+  Subnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: !Select [0, !GetAtt [CidrFindr, CidrBlocks]]
+      VpcId: !Ref Vpc
+      
+  # Use the second entry from CidrFindr's CidrBlocks property
+  Subnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: !Select [1, !GetAtt [CidrFindr, CidrBlocks]]
+      VpcId: !Ref Vpc
+      
+  # Use the third entry from CidrFindr's CidrBlocks property
+  Subnet3:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: !Select [2, !GetAtt [CidrFindr, CidrBlocks]]
+      VpcId: !Ref Vpc
+```
