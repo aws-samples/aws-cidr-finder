@@ -9,6 +9,7 @@ or in the "license" file accompanying this file. This file is distributed on an 
 """
 
 from cidr_findr import find_next_subnet
+from lambda_utils import parse_size, are_sizes_valid
 import unittest
 
 class CidrFindrTestCase(unittest.TestCase):
@@ -162,6 +163,31 @@ class CidrFindrTestCase(unittest.TestCase):
             requests=[25],
             expected=["10.0.0.0/25"],
         )
+
+    def test_string_integers(self):
+        """
+        Subnet mask passed as string
+        """
+        sizes=["25",24,"23"]
+        sizes = map(parse_size, sizes)
+
+        self.assertTrue(all(isinstance(size, int) for size in sizes))
+
+    def test_subnet_too_small(self):
+        """
+        Subnet masks are too small
+        """
+        sizes = [29]
+
+        self.assertFalse(are_sizes_valid(sizes))
+
+    def test_subnet_too_large(self):
+        """
+        Subnet masks are too big
+        """
+        sizes = [15]
+
+        self.assertFalse(are_sizes_valid(sizes))
 
 if __name__ == "__main__":
     unittest.main()
