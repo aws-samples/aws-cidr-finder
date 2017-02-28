@@ -59,6 +59,9 @@ def lambda_handler(event, context):
     vpc_id = event["ResourceProperties"]["VpcId"]
     sizes = event["ResourceProperties"]["Sizes"]
 
+    # Convert to int any item containing numbers
+    sizes = map(int, sizes)
+    
     # Check the sizes are valid
     if any(size < 16 or size > 28 for size in sizes):
         return send_response(event, context, "FAILED", reason="An invalid subnet size was specified: {}".format(", ".join(sizes)))
