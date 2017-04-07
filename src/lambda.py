@@ -13,6 +13,7 @@ import json
 from urllib2 import HTTPError, build_opener, HTTPHandler, Request
 
 from cidr_findr import find_next_subnet
+from lambda_utils import parse_size, are_sizes_valid
 
 def send_response(event, context, response_status, reason=None, response_data={}):
     response_body = {
@@ -59,8 +60,10 @@ def lambda_handler(event, context):
     vpc_id = event["ResourceProperties"]["VpcId"]
     sizes = event["ResourceProperties"]["Sizes"]
 
+    sizes = map(parse_size, sizes)
+
     # Check the sizes are valid
-    if any(size < 16 or size > 28 for size in sizes):
+    if are_sizes_valid(sizes):
         return send_response(event, context, "FAILED", reason="An invalid subnet size was specified: {}".format(", ".join(sizes)))
 
     # Query existing subnets
