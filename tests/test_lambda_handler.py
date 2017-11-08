@@ -19,7 +19,14 @@ class MockEc2():
         return {
             "Vpcs": [
                 {
-                    "CidrBlock": "10.0.0.0/16",
+                    "CidrBlockAssociationSet": [
+                        {
+                            "CidrBlock": "10.0.0.0/16",
+                        },
+                        {
+                            "CidrBlock": "10.1.0.0/16",
+                        }
+                    ]
                 },
             ],
         }
@@ -32,6 +39,9 @@ class MockEc2():
                 },
                 {
                     "CidrBlock": "10.0.1.0/25",
+                },
+                {
+                    "CidrBlock": "10.1.0.0/24",
                 },
             ]
         }
@@ -155,9 +165,9 @@ class LambdaHandlerTestCase(unittest.TestCase):
             "status": "SUCCESS",
             "reason": None,
             "data": {
-                "CidrBlock1": "10.0.1.128/24",
-                "CidrBlock2": "10.0.2.128/25",
-                "CidrBlock3": "10.0.3.0/26",
+                "CidrBlock1": "10.0.1.128/25",
+                "CidrBlock2": "10.0.2.0/17",
+                "CidrBlock3": "10.1.1.0/17",
             },
         }
 
@@ -165,7 +175,7 @@ class LambdaHandlerTestCase(unittest.TestCase):
             "RequestType": "Create",
             "ResourceProperties": {
                 "VpcId": "",
-                "Sizes": ["24", "25", "26"],
+                "Sizes": ["25", "17", "17"],
             },
         }
 
