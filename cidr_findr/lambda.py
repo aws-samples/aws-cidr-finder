@@ -25,13 +25,15 @@ def send_response(event, context, response_status, reason=None, response_data={}
         "LogicalResourceId": event["LogicalResourceId"],
     }
 
+    print("Responding: {}".format(response_status))
+
     if reason:
+        print(reason)
         body["Reason"] = reason
 
     if response_data:
         body["Data"] = response_data
 
-    print("Responding:", body)
 
     body = json.dumps(body).encode("utf-8")
 
