@@ -46,8 +46,8 @@ def send_response(event, context, response_status, reason=None, response_data={}
         body["Reason"] = reason
 
     if response_data:
+        print(response_data)
         body["Data"] = response_data
-
 
     body = json.dumps(body).encode("utf-8")
 
