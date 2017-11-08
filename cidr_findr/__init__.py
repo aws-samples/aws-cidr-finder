@@ -9,3 +9,4 @@ or in the "license" file accompanying this file. This file is distributed on an 
 """
 
 from .cidr_findr import find_next_subnet, CidrFindrException
+from .lambda_handler import handler as lambda_handler

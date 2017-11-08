@@ -9,7 +9,7 @@ or in the "license" file accompanying this file. This file is distributed on an 
 """
 
 
-from . import find_next_subnet, CidrFindrException
+from .cidr_findr import find_next_subnet, CidrFindrException
 from .lambda_utils import parse_size, send_response, sizes_valid
 import boto3
 
@@ -35,7 +35,11 @@ def handler(event, context):
         return send_response(event, context, "FAILED", reason="An invalid subnet size was specified: {}".format(", ".join(map(str, sizes))))
 
     # Query existing subnets
-    vpc_cidr = ec2.describe_vpcs(VpcIds=[vpc_id])["Vpcs"][0]["CidrBlock"]
+    try:
+        vpc_cidr = ec2.describe_vpcs(VpcIds=[vpc_id])["Vpcs"][0]["CidrBlock"]
+    except Exception as e:
+        return send_response(event, context, "FAILED", reason=str(e))
+
     subnet_cidrs = [subnet["CidrBlock"] for subnet in ec2.describe_subnets(Filters=[{"Name": "vpc-id", "Values": [vpc_id]}])["Subnets"]]
 
     # These are the CIDRs you're looking for
