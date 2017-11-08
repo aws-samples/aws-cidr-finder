@@ -8,7 +8,7 @@ AWS CIDR finder provides a Lambda function that can be used as a [custom resourc
 
 ## Usage
 
-First of all, you need to install AWS CIDR finder in your account. The included `deploy.sh` script will create the lambda function for you and provide an [exported CloudFormation value](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-stack-exports.html) that you can [make use of](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-importvalue.html) in your own templates.
+First of all, you need to install AWS CIDR finder in your account. The included `install.sh` script will create the lambda function for you and provide an [exported CloudFormation value](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-stack-exports.html) that you can [make use of](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-importvalue.html) in your own templates.
 
 ### Example CloudFormation template
 
@@ -35,20 +35,20 @@ Resources:
   Subnet1:
     Type: AWS::EC2::Subnet
     Properties:
-      CidrBlock: !Select [0, !GetAtt [CidrFindr, CidrBlocks]]
+      CidrBlock: !Select [0, !GetAtt CidrFindr.CidrBlocks]
       VpcId: !Ref Vpc
       
   # Use the second entry from CidrFindr's CidrBlocks property
   Subnet2:
     Type: AWS::EC2::Subnet
     Properties:
-      CidrBlock: !Select [1, !GetAtt [CidrFindr, CidrBlocks]]
+      CidrBlock: !Select [1, !GetAtt CidrFindr.CidrBlocks]
       VpcId: !Ref Vpc
       
   # Use the third entry from CidrFindr's CidrBlocks property
   Subnet3:
     Type: AWS::EC2::Subnet
     Properties:
-      CidrBlock: !Select [2, !GetAtt [CidrFindr, CidrBlocks]]
+      CidrBlock: !Select [2, !GetAtt CidrFindr.CidrBlocks]
       VpcId: !Ref Vpc
 ```
