@@ -8,7 +8,34 @@ http://aws.amazon.com/apache2.0/
 or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 """
 
+class CidrFindrException(Exception):
+    pass
+
 class Range(object):
+    def __init__(self, base=None, top=None, size=None, cidr=None):
+        if cidr:
+            base, size = cidr.split("/")
+
+        if isinstance(base, str):
+            self.base = self.ip_to_num(base)
+        else:
+            self.base = base
+
+        if size:
+            size = int(size)
+
+            self.top = self.base + 2 ** (32 - size)
+            self.size = size
+        elif top:
+            if isinstance(top, str):
+                self.top = self.ip_to_num(top)
+            else:
+                self.top = top
+
+            self.size = math.log(self.top - self.bottom, 2)
+        else:
+            raise Error("Not enough information to determine IP range")
+
     @staticmethod
     def ip_to_num(ip):
         ip = ip.split(".")
@@ -39,37 +66,13 @@ class Range(object):
 
         return False
 
-    def __init__(self, base=None, top=None, size=None, cidr=None):
-        if cidr:
-            base, size = cidr.split("/")
-
-        if isinstance(base, str):
-            self.base = self.ip_to_num(base)
-        else:
-            self.base = base
-
-        if size:
-            size = int(size)
-
-            self.top = self.base + 2 ** (32 - size)
-            self.size = size
-        elif top:
-            if isinstance(top, str):
-                self.top = self.ip_to_num(top)
-            else:
-                self.top = top
-
-            self.size = math.log(self.top - self.bottom, 2)
-        else:
-            raise Error("Not enough information to determine IP range")
-
     def to_cidr(self):
         return "{}/{}".format(self.num_to_ip(self.base), self.size)
 
     def __str__(self):
         return self.to_cidr()
 
-def find_next_subnet(vpc, subnets, reqs):
+def find_next_subnet(vpc=None, subnets=[], requests=[]):
     vpc = Range(cidr=vpc)
 
     subnets.sort()
@@ -82,7 +85,7 @@ def find_next_subnet(vpc, subnets, reqs):
 
     results = []
 
-    for req in reqs:
+    for req in requests:
         attempt = Range(base=vpc.base, size=req)
 
         for subnet in subnets:
@@ -95,7 +98,7 @@ def find_next_subnet(vpc, subnets, reqs):
 
         # Check we have space
         if attempt.top > vpc.top:
-            return None
+            raise CidrFindrException("Not enough space for the requested CIDR blocks")
 
         results.append(attempt)
         subnets.append(attempt)
