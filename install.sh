@@ -19,8 +19,10 @@ if [ -z $bucket ]; then
 fi
 
 # Create the stack
+zip -9 -r cidr-findr.zip cidr_findr
 aws cloudformation package --template-file template.yaml --s3-bucket $bucket --output-template-file template.out.yaml >/dev/null
 aws cloudformation deploy --template-file template.out.yaml --stack-name $STACK --capabilities CAPABILITY_IAM
 
 # Clean up
 rm template.out.yaml
+rm cidr-findr.zip
