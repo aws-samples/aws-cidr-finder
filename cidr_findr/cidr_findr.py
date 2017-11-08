@@ -58,10 +58,16 @@ class Range(object):
         return ".".join(ip)
 
     def overlaps(self, other):
+        if self.top > other.base and self.top < other.top:
+            return True
+
         if self.base >= other.base and self.base < other.top:
             return True
 
-        if self.top > other.base and self.top < other.top:
+        if other.top > self.base and other.top < self.top:
+            return True
+
+        if other.base >= self.base and other.base < self.top:
             return True
 
         return False

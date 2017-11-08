@@ -174,6 +174,21 @@ class CidrFindrTestCase(unittest.TestCase):
 
         self.assertEqual(actual, expected)
 
+    def test_complete_overlap(self):
+        """
+        Requirement would overlap an existing subnet completely
+        """
+
+        actual = self.__get_cidrs(
+            vpc="10.0.0.0/16",
+            subnets=["10.0.0.64/25"],
+            requests=[25],
+        )
+
+        expected = ["10.0.0.192/25"]
+
+        self.assertEqual(actual, expected)
+
     def test_strings_in_input(self):
         """
         Strings are converted correctly into numbers
