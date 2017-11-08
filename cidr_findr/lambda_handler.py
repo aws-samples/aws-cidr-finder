@@ -59,5 +59,6 @@ def handler(event, context, responder=send_response, client=ec2):
 
     # We have a winner
     return responder(event, context, "SUCCESS", response_data={
-        "CidrBlocks": result,
+        "CidrBlock{}".format(i + 1): cidr_block
+        for i, cidr_block in enumerate(result)
     })
