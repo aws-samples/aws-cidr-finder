@@ -9,7 +9,7 @@ or in the "license" file accompanying this file. This file is distributed on an 
 """
 
 from cidr_findr import find_next_subnet, CidrFindrException
-from lambda_utils import parse_size, are_sizes_valid
+from lambda_utils import parse_size, sizes_valid
 import unittest
 
 class CidrFindrTestCase(unittest.TestCase):
@@ -126,7 +126,7 @@ class CidrFindrTestCase(unittest.TestCase):
         Request won't fit in the network
         """
 
-        with self.assertRaisesRegexp(CidrFindrException, "Not enough space for the requested CIDR blocks"):
+        with self.assertRaisesRegex(CidrFindrException, "Not enough space for the requested CIDR blocks"):
             find_next_subnet(
                 vpc="10.0.0.0/25",
                 requests=[24],
@@ -137,7 +137,7 @@ class CidrFindrTestCase(unittest.TestCase):
         Existing subnet fills entire network
         """
 
-        with self.assertRaisesRegexp(CidrFindrException, "Not enough space for the requested CIDR blocks"):
+        with self.assertRaisesRegex(CidrFindrException, "Not enough space for the requested CIDR blocks"):
             find_next_subnet(
                 vpc="10.0.0.0/24",
                 subnets=["10.0.0.0/24"],
@@ -149,7 +149,7 @@ class CidrFindrTestCase(unittest.TestCase):
         Subnet in the middle but not enough space either side
         """
 
-        with self.assertRaisesRegexp(CidrFindrException, "Not enough space for the requested CIDR blocks"):
+        with self.assertRaisesRegex(CidrFindrException, "Not enough space for the requested CIDR blocks"):
             find_next_subnet(
                 vpc="10.0.0.0/24",
                 subnets=["10.0.0.64/25"],
@@ -200,7 +200,7 @@ class CidrFindrTestCase(unittest.TestCase):
         """
         sizes = [29]
 
-        self.assertFalse(are_sizes_valid(sizes))
+        self.assertFalse(sizes_valid(sizes))
 
     def test_subnet_too_large(self):
         """
@@ -208,7 +208,7 @@ class CidrFindrTestCase(unittest.TestCase):
         """
         sizes = [15]
 
-        self.assertFalse(are_sizes_valid(sizes))
+        self.assertFalse(sizes_valid(sizes))
 
     def test_strings_in_input(self):
         """
