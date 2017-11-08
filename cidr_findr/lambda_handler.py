@@ -43,17 +43,21 @@ def handler(event, context, responder=send_response, client=ec2):
 
     # Query existing subnets
     try:
-        vpc_cidr = client.describe_vpcs(VpcIds=[vpc_id])["Vpcs"][0]["CidrBlock"]
+        vpc_cidrs = [
+            cidr_block_association["CidrBlock"]
+            for cidr_block_association
+            in client.describe_vpcs(VpcIds=[vpc_id])["Vpcs"][0]["CidrBlockAssociationSet"]
+        ]
     except Exception as e:
         return responder(event, context, "FAILED", reason=str(e))
 
     subnet_cidrs = [subnet["CidrBlock"] for subnet in client.describe_subnets(Filters=[{"Name": "vpc-id", "Values": [vpc_id]}])["Subnets"]]
 
-    findr = CidrFindr(vpc_cidr, subnets=subnet_cidrs)
+    findr = CidrFindr(networks=vpc_cidrs, subnets=subnet_cidrs)
 
     # These are the CIDRs you're looking for
     try:
-        result = [findr.next_subnet(size) for size in sizes]
+        result = [findr.next_subnet(size) for size in parsed_sizes]
     except CidrFindrException as e:
         return responder(event, context, "FAILED", reason=str(e))
 

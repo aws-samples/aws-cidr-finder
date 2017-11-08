@@ -78,31 +78,50 @@ class Range(object):
     def __str__(self):
         return self.to_cidr()
 
-class CidrFindr():
-    def __init__(self, vpc=None, subnets=[]):
-        self.vpc = Range(cidr=vpc)
+class Network():
+    def __init__(self, network, subnets):
+        self.network = network
+        self.subnets = subnets
 
-        self.subnets = [
+    def next_subnet(self, req):
+        if req <= self.network.size:
+            raise CidrFindrException("Can't fit a /{} subnet in a /{} network".format(req, self.network.size))
+
+        for base in range(self.network.base, self.network.top, 2 ** (32 - req)):
+            attempt = Range(base=base, size=req)
+
+            if attempt.top > self.network.top:
+                break
+
+            if not any(attempt.overlaps(subnet) for subnet in self.subnets):
+                self.subnets.append(attempt)
+                return attempt.to_cidr()
+
+        raise CidrFindrException("Not enough space for a /{} in {}".format(req, self.network.to_cidr()))
+
+class CidrFindr():
+    def __init__(self, network=None, networks=[], subnets=[]):
+        if network:
+            networks = [network]
+
+        networks = [Range(cidr=network) for network in sorted(networks)]
+
+        subnets = [
             Range(cidr=subnet)
             for subnet
             in sorted(subnets)
         ]
 
+        self.networks = [
+            Network(network, [subnet for subnet in subnets if subnet.overlaps(network)])
+            for network in networks
+        ]
+
     def next_subnet(self, req):
-        attempt = Range(base=self.vpc.base, size=req)
+        for network in self.networks:
+            try:
+                return network.next_subnet(req)
+            except CidrFindrException:
+                pass
 
-        for subnet in self.subnets:
-            # Check for clashes with subnets
-            if not attempt.overlaps(subnet):
-                break
-
-            # Start at the top of the subnet we clashed with
-            attempt = Range(base=subnet.top, size=req)
-
-        # Check we have space
-        if attempt.top > self.vpc.top:
-            raise CidrFindrException("Not enough space for the requested CIDR blocks")
-
-        self.subnets.append(attempt)
-
-        return attempt.to_cidr()
+        raise CidrFindrException("Not enough space for the requested CIDR blocks")
