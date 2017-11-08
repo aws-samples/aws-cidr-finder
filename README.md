@@ -23,7 +23,7 @@ Resources:
       CidrBlock: 192.168.0.0/23
 
   # Call the custom resource, specify 3 subnets of different sizes.
-  # The resource will have a property called CidrBlocks with an array of 3 CIDR block definitions
+  # The resource will have properties called CidrBlock1, CidrBlock2, and CidrBlock3 to contain the 3 CIDR block definitions
   CidrFindr:
     Type: Custom::CidrFindr
     Properties:
@@ -31,24 +31,24 @@ Resources:
       VpcId: !Ref Vpc  # Refer to the VPC created above
       Sizes: [24, 25, 26]  # 3 subnets of differing sizes
 
-  # Use the first entry from CidrFindr's CidrBlocks property
+  # Use the first cidr block from the CidrFindr resource
   Subnet1:
     Type: AWS::EC2::Subnet
     Properties:
-      CidrBlock: !Select [0, !GetAtt CidrFindr.CidrBlocks]
+      CidrBlock: !GetAtt CidrFindr.CidrBlock1
       VpcId: !Ref Vpc
       
-  # Use the second entry from CidrFindr's CidrBlocks property
+  # Use the second cidr block from the CidrFindr resource
   Subnet2:
     Type: AWS::EC2::Subnet
     Properties:
-      CidrBlock: !Select [1, !GetAtt CidrFindr.CidrBlocks]
+      CidrBlock: !GetAtt CidrFindr.CidrBlock2
       VpcId: !Ref Vpc
       
-  # Use the third entry from CidrFindr's CidrBlocks property
+  # Use the third cidr block from the CidrFindr resource
   Subnet3:
     Type: AWS::EC2::Subnet
     Properties:
-      CidrBlock: !Select [2, !GetAtt CidrFindr.CidrBlocks]
+      CidrBlock: !GetAtt CidrFindr.CidrBlock3
       VpcId: !Ref Vpc
 ```

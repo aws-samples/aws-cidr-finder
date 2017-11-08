@@ -24,34 +24,31 @@ Resources:
       VpcId: !Ref Vpc  # Refer to the VPC created above
       Sizes: [24, 25, 26]  # 3 subnets of differing sizes
 
-  # Use the first entry from CidrFindr's CidrBlocks property
   Subnet1:
     Type: AWS::EC2::Subnet
     Properties:
-      CidrBlock: !Select [0, !GetAtt CidrFindr.CidrBlocks]
       VpcId: !Ref Vpc
+      CidrBlock: !GetAtt CidrFindr.CidrBlock1
       
-  # Use the second entry from CidrFindr's CidrBlocks property
   Subnet2:
     Type: AWS::EC2::Subnet
     Properties:
-      CidrBlock: !Select [1, !GetAtt CidrFindr.CidrBlocks]
       VpcId: !Ref Vpc
+      CidrBlock: !GetAtt CidrFindr.CidrBlock2
       
-  # Use the third entry from CidrFindr's CidrBlocks property
   Subnet3:
     Type: AWS::EC2::Subnet
     Properties:
-      CidrBlock: !Select [2, !GetAtt CidrFindr.CidrBlocks]
       VpcId: !Ref Vpc
+      CidrBlock: !GetAtt CidrFindr.CidrBlock3
 
 Outputs:
   Subnet1Cidr:
     Description: Subnet 1 CIDR Block
-    Value: !Select [0, !GetAtt CidrFindr.CidrBlocks]
+    Value: !GetAtt CidrFindr.CidrBlock1
   Subnet2Cidr:
     Description: Subnet 2 CIDR Block
-    Value: !Select [1, !GetAtt CidrFindr.CidrBlocks]
+    Value: !GetAtt CidrFindr.CidrBlock2
   Subnet3Cidr:
     Description: Subnet 3 CIDR Block
-    Value: !Select [2, !GetAtt CidrFindr.CidrBlocks]
+    Value: !GetAtt CidrFindr.CidrBlock3
