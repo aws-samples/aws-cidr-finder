@@ -28,30 +28,30 @@ Resources:
   Subnet1:
     Type: AWS::EC2::Subnet
     Properties:
-      CidrBlock: !Select [0, !GetAtt [CidrFindr, CidrBlocks]]
+      CidrBlock: !Select [0, !GetAtt CidrFindr.CidrBlocks]
       VpcId: !Ref Vpc
       
   # Use the second entry from CidrFindr's CidrBlocks property
   Subnet2:
     Type: AWS::EC2::Subnet
     Properties:
-      CidrBlock: !Select [1, !GetAtt [CidrFindr, CidrBlocks]]
+      CidrBlock: !Select [1, !GetAtt CidrFindr.CidrBlocks]
       VpcId: !Ref Vpc
       
   # Use the third entry from CidrFindr's CidrBlocks property
   Subnet3:
     Type: AWS::EC2::Subnet
     Properties:
-      CidrBlock: !Select [2, !GetAtt [CidrFindr, CidrBlocks]]
+      CidrBlock: !Select [2, !GetAtt CidrFindr.CidrBlocks]
       VpcId: !Ref Vpc
 
 Outputs:
   Subnet1Cidr:
     Description: Subnet 1 CIDR Block
-    Value: !Select [0, !GetAtt [CidrFindr, CidrBlocks]]
+    Value: !Select [0, !GetAtt CidrFindr.CidrBlocks]
   Subnet2Cidr:
     Description: Subnet 2 CIDR Block
-    Value: !Select [1, !GetAtt [CidrFindr, CidrBlocks]]
+    Value: !Select [1, !GetAtt CidrFindr.CidrBlocks]
   Subnet3Cidr:
     Description: Subnet 3 CIDR Block
-    Value: !Select [2, !GetAtt [CidrFindr, CidrBlocks]]
+    Value: !Select [2, !GetAtt CidrFindr.CidrBlocks]
