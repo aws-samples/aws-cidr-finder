@@ -72,23 +72,20 @@ class Range(object):
     def __str__(self):
         return self.to_cidr()
 
-def find_next_subnet(vpc=None, subnets=[], requests=[]):
-    vpc = Range(cidr=vpc)
+class CidrFindr():
+    def __init__(self, vpc=None, subnets=[]):
+        self.vpc = Range(cidr=vpc)
 
-    subnets.sort()
+        self.subnets = [
+            Range(cidr=subnet)
+            for subnet
+            in sorted(subnets)
+        ]
 
-    subnets = [
-        Range(cidr=subnet)
-        for subnet
-        in subnets
-    ]
+    def next_subnet(self, req):
+        attempt = Range(base=self.vpc.base, size=req)
 
-    results = []
-
-    for req in requests:
-        attempt = Range(base=vpc.base, size=req)
-
-        for subnet in subnets:
+        for subnet in self.subnets:
             # Check for clashes with subnets
             if not attempt.overlaps(subnet):
                 break
@@ -97,10 +94,9 @@ def find_next_subnet(vpc=None, subnets=[], requests=[]):
             attempt = Range(base=subnet.top, size=req)
 
         # Check we have space
-        if attempt.top > vpc.top:
+        if attempt.top > self.vpc.top:
             raise CidrFindrException("Not enough space for the requested CIDR blocks")
 
-        results.append(attempt)
-        subnets.append(attempt)
+        self.subnets.append(attempt)
 
-    return [result.to_cidr() for result in results]
+        return attempt.to_cidr()
