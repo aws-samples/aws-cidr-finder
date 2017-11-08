@@ -57,7 +57,7 @@ def handler(event, context, responder=send_response, client=ec2):
 
     # These are the CIDRs you're looking for
     try:
-        result = [findr.next_subnet(size) for size in sizes]
+        result = [findr.next_subnet(size) for size in parsed_sizes]
     except CidrFindrException as e:
         return responder(event, context, "FAILED", reason=str(e))
 

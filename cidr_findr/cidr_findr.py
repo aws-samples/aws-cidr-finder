@@ -84,23 +84,20 @@ class Network():
         self.subnets = subnets
 
     def next_subnet(self, req):
-        attempt = Range(base=self.network.base, size=req)
+        if req <= self.network.size:
+            raise CidrFindrException("Can't fit a /{} subnet in a /{} network".format(req, self.network.size))
 
-        for subnet in self.subnets:
-            # Check for clashes with subnets
-            if not attempt.overlaps(subnet):
+        for base in range(self.network.base, self.network.top, 2 ** (32 - req)):
+            attempt = Range(base=base, size=req)
+
+            if attempt.top > self.network.top:
                 break
 
-            # Start at the top of the subnet we clashed with
-            attempt = Range(base=subnet.top, size=req)
+            if not any(attempt.overlaps(subnet) for subnet in self.subnets):
+                self.subnets.append(attempt)
+                return attempt.to_cidr()
 
-        # Check we have space
-        if attempt.top > self.network.top:
-            raise CidrFindrException("Not enough space for a /{} in {}".format(req, self.network.to_cidr()))
-
-        self.subnets.append(attempt)
-
-        return attempt.to_cidr()
+        raise CidrFindrException("Not enough space for a /{} in {}".format(req, self.network.to_cidr()))
 
 class CidrFindr():
     def __init__(self, network=None, networks=[], subnets=[]):

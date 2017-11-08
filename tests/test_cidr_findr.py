@@ -87,6 +87,7 @@ class CidrFindrTestCase(unittest.TestCase):
     def test_different_sizes(self):
         """
         One subnet at the beginning, looking for two different sized subnet
+        The second subnet can squeeze in beside the existing one :)
         """
 
         actual = self.__get_cidrs(
@@ -95,7 +96,7 @@ class CidrFindrTestCase(unittest.TestCase):
             requests=[24, 25],
         )
 
-        expected = ["10.0.0.128/24", "10.0.1.128/25"]
+        expected = ["10.0.1.0/24", "10.0.0.128/25"]
 
         self.assertEqual(actual, expected)
 
@@ -181,11 +182,11 @@ class CidrFindrTestCase(unittest.TestCase):
 
         actual = self.__get_cidrs(
             vpc="10.0.0.0/16",
-            subnets=["10.0.0.64/25"],
+            subnets=["10.0.0.64/26"],
             requests=[25],
         )
 
-        expected = ["10.0.0.192/25"]
+        expected = ["10.0.0.128/25"]
 
         self.assertEqual(actual, expected)
 
@@ -196,7 +197,7 @@ class CidrFindrTestCase(unittest.TestCase):
 
         actual = self.__get_cidrs(
             vpc="10.0.0.0/16",
-            requests=["24"],
+            requests=[24],
         )
 
         expected = ["10.0.0.0/24"]
@@ -217,3 +218,30 @@ class CidrFindrTestCase(unittest.TestCase):
         expected = ["10.0.0.128/25", "10.0.1.128/25"]
 
         self.assertEqual(actual, expected)
+
+    def test_netmask(self):
+        """
+        Test that the netmask is respected.
+        e.g. With two /24s, a /22 can't start at 10.0.2.0
+        """
+
+        actual = self.__get_cidrs(
+            vpc="10.0.0.0/16",
+            subnets=["10.0.0.0/24", "10.0.1.0/24"],
+            requests=[22],
+        )
+
+        expected = ["10.0.4.0/22"]
+
+        self.assertEqual(actual, expected)
+
+    def test_subnet_is_smaller(self):
+        """
+        Test that we can't put a /16 subnet into a /16 network
+        """
+
+        with self.assertRaisesRegex(CidrFindrException, "Not enough space for the requested CIDR blocks"):
+            self.__get_cidrs(
+                vpc="10.0.0.0/16",
+                requests=[16],
+            )
