@@ -13,13 +13,14 @@ def parse_size(size):
     Parse the size parameter
     """
     if isinstance(size, int):
-       return size
-    elif isinstance(size, str):
-       if size.isdigit():
-          return int(size)
+        return size
+
+    elif isinstance(size, str) and size.isdigit():
+        return int(size)
+
     return None
 
-def are_sizes_valid(sizes):
+def sizes_valid(sizes):
     """
     Validate the subnet masks
     """

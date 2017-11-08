@@ -34,7 +34,7 @@ class Range(object):
 
             self.size = math.log(self.top - self.bottom, 2)
         else:
-            raise Error("Not enough information to determine IP range")
+            raise CidrFindrException("Not enough information to determine IP range")
 
     @staticmethod
     def ip_to_num(ip):
