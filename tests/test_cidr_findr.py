@@ -17,8 +17,8 @@ class CidrFindrTestCase(unittest.TestCase):
     Test the find_next_subnet function
     """
 
-    def __get_cidrs(self, vpc, subnets=[], requests=[]):
-        self.findr = CidrFindr(vpc, subnets=subnets)
+    def __get_cidrs(self, vpc=None, vpcs=[], subnets=[], requests=[]):
+        self.findr = CidrFindr(network=vpc, networks=vpcs, subnets=subnets)
 
         return [
             self.findr.next_subnet(request)
@@ -200,5 +200,20 @@ class CidrFindrTestCase(unittest.TestCase):
         )
 
         expected = ["10.0.0.0/24"]
+
+        self.assertEqual(actual, expected)
+
+    def test_multiple_vpcs(self):
+        """
+        Find space across multiple VPCs
+        """
+
+        actual = self.__get_cidrs(
+            vpcs=["10.0.0.0/24", "10.0.1.0/24"],
+            subnets=["10.0.0.0/25", "10.0.1.0/25"],
+            requests=[25, 25],
+        )
+
+        expected = ["10.0.0.128/25", "10.0.1.128/25"]
 
         self.assertEqual(actual, expected)

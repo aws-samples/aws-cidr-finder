@@ -78,15 +78,10 @@ class Range(object):
     def __str__(self):
         return self.to_cidr()
 
-class CidrFindr():
-    def __init__(self, network, subnets=[]):
-        self.network = Range(cidr=network)
-
-        self.subnets = [
-            Range(cidr=subnet)
-            for subnet
-            in sorted(subnets)
-        ]
+class Network():
+    def __init__(self, network, subnets):
+        self.network = network
+        self.subnets = subnets
 
     def next_subnet(self, req):
         attempt = Range(base=self.network.base, size=req)
@@ -101,8 +96,35 @@ class CidrFindr():
 
         # Check we have space
         if attempt.top > self.network.top:
-            raise CidrFindrException("Not enough space for the requested CIDR blocks")
+            raise CidrFindrException("Not enough space for a /{} in {}".format(req, self.network.to_cidr()))
 
         self.subnets.append(attempt)
 
         return attempt.to_cidr()
+
+class CidrFindr():
+    def __init__(self, network=None, networks=[], subnets=[]):
+        if network:
+            networks = [network]
+
+        networks = [Range(cidr=network) for network in sorted(networks)]
+
+        subnets = [
+            Range(cidr=subnet)
+            for subnet
+            in sorted(subnets)
+        ]
+
+        self.networks = [
+            Network(network, [subnet for subnet in subnets if subnet.overlaps(network)])
+            for network in networks
+        ]
+
+    def next_subnet(self, req):
+        for network in self.networks:
+            try:
+                return network.next_subnet(req)
+            except CidrFindrException:
+                pass
+
+        raise CidrFindrException("Not enough space for the requested CIDR blocks")
