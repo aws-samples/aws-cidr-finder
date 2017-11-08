@@ -9,7 +9,7 @@ or in the "license" file accompanying this file. This file is distributed on an 
 """
 
 
-from cidr_findr import find_next_subnet
+from cidr_findr import find_next_subnet, CidrFindrException
 from lambda_utils import parse_size, sizes_valid
 from urllib.parse import urlencode
 from urllib.request import urlopen, Request, HTTPError, URLError
@@ -78,13 +78,12 @@ def handler(event, context):
     subnet_cidrs = [subnet["CidrBlock"] for subnet in ec2.describe_subnets(Filters=[{"Name": "vpc-id", "Values": [vpc_id]}])["Subnets"]]
 
     # These are the CIDRs you're looking for
-    result = find_next_subnet(vpc_cidr, subnet_cidrs, sizes)
+    try:
+        result = find_next_subnet(vpc_cidr, subnet_cidrs, sizes)
+    except CidrFindrException as e:
+        return send_response(event, context, "FAILED", reason=str(e))
 
     print("VPC: {}, Subnets: {}, Request: {}, Result: {}".format(vpc_cidr, subnet_cidrs, sizes, result))
-
-    # Nothing found
-    if result is None:
-        return send_response(event, context, "FAILED", reason="Not enough space for the requested CIDR blocks")
 
     # We have a winner
     return send_response(event, context, "SUCCESS", response_data={
