@@ -9,49 +9,11 @@ or in the "license" file accompanying this file. This file is distributed on an 
 """
 
 
-from cidr_findr import find_next_subnet, CidrFindrException
-from lambda_utils import parse_size, sizes_valid
-from urllib.parse import urlencode
-from urllib.request import urlopen, Request, HTTPError, URLError
+from . import find_next_subnet, CidrFindrException
+from .lambda_utils import parse_size, send_response, sizes_valid
 import boto3
-import json
 
-def send_response(event, context, response_status, reason=None, response_data={}):
-    body = {
-        "Status": response_status,
-        "PhysicalResourceId": context.log_stream_name,
-        "StackId": event["StackId"],
-        "RequestId": event["RequestId"],
-        "LogicalResourceId": event["LogicalResourceId"],
-    }
-
-    print("Responding: {}".format(response_status))
-
-    if reason:
-        print(reason)
-        body["Reason"] = reason
-
-    if response_data:
-        body["Data"] = response_data
-
-
-    body = json.dumps(body).encode("utf-8")
-
-    req = Request(event["ResponseURL"], data=body, headers={
-        "Content-Length": len(body),
-        "Content-Type": "",
-    })
-    req.get_method = lambda: "PUT"
-
-    try:
-        urlopen(req)
-        return True
-    except HTTPError as e:
-        print("Failed executing HTTP request: {}".format(e.code))
-        return False
-    except URLError as e:
-        print("Failed to reach the server: {}".format(e.reason))
-        return False
+ec2 = boto3.client("ec2")
 
 def handler(event, context):
     """
@@ -73,7 +35,6 @@ def handler(event, context):
         return send_response(event, context, "FAILED", reason="An invalid subnet size was specified: {}".format(", ".join(map(str, sizes))))
 
     # Query existing subnets
-    ec2 = boto3.client("ec2")
     vpc_cidr = ec2.describe_vpcs(VpcIds=[vpc_id])["Vpcs"][0]["CidrBlock"]
     subnet_cidrs = [subnet["CidrBlock"] for subnet in ec2.describe_subnets(Filters=[{"Name": "vpc-id", "Values": [vpc_id]}])["Subnets"]]
 
